@@ -1,0 +1,106 @@
+@model BloodBankSystem.ViewModels.StockIndexViewModel
+@{
+    ViewData["Title"] = "Blood Stock Inventory";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Blood Stock Inventory</h1>
+        <p class="page-subtitle">Current stock levels, alert thresholds, and manual ledger adjustments</p>
+    </div>
+</div>
+
+<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+    @foreach (var item in Model.Stocks)
+    {
+        <div class="card @(item.AvailableUnits == 0 ? "card-danger" : (item.Status == "Low" ? "card-warning" : "card-success"))" style="text-align: center;">
+            <div class="card-title">@item.BloodGroupName</div>
+            <div class="card-value" style="color: @(item.AvailableUnits == 0 ? "#C62828" : (item.Status == "Low" ? "#E65100" : "#2E7D32"))">
+                @item.AvailableUnits <span style="font-size: 1rem; font-weight: normal; color: var(--text-muted);">units</span>
+            </div>
+            <div>
+                <span class="badge @item.StatusClass">@item.Status</span>
+            </div>
+            <div class="card-desc" style="margin-top: 0.5rem;">
+                Min threshold: @item.MinimumLevel units
+            </div>
+        </div>
+    }
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 1.5rem; align-items: start;">
+    <!-- Stock Levels Table -->
+    <div>
+        <h3 style="margin-bottom: 0.75rem; color: var(--primary-dark);">Inventory Status Table</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Blood Group</th>
+                        <th>Available Units</th>
+                        <th>Status</th>
+                        <th>Min Threshold</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Stocks)
+                    {
+                        <tr class="@(item.AvailableUnits == 0 ? "row-critical" : (item.Status == "Low" ? "row-urgent" : ""))">
+                            <td><strong>@item.BloodGroupName</strong></td>
+                            <td><strong style="font-size: 1.1rem;">@item.AvailableUnits</strong></td>
+                            <td><span class="badge @item.StatusClass">@item.Status</span></td>
+                            <td>
+                                <form asp-action="UpdateMinimumLevel" method="post" style="display: flex; gap: 0.25rem; align-items: center;">
+                                    <input type="hidden" name="bloodGroupId" value="@item.BloodGroupId" />
+                                    <input type="number" name="minimumLevel" value="@item.MinimumLevel" min="0" max="999" class="form-control" style="width: 75px; padding: 0.25rem 0.4rem; font-size: 0.85rem;" />
+                                    <button type="submit" class="btn btn-sm btn-outline" title="Update threshold">✓</button>
+                                </form>
+                            </td>
+                            <td style="font-size: 0.82rem; color: var(--text-muted);">@item.LastUpdated.ToLocalTime().ToString("g")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Manual Adjustment Form -->
+    <div class="card card-primary">
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.5rem;">Manual Stock Correction</h3>
+        <p class="card-desc" style="margin-bottom: 1.25rem;">
+            Record a verified count adjustment. All changes are permanently recorded in the transaction ledger.
+        </p>
+
+        <form asp-action="Adjust" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="AdjustmentModel.BloodGroupId" class="form-label"></label>
+                <select asp-for="AdjustmentModel.BloodGroupId" asp-items="@ViewBag.BloodGroupSelectList" class="form-select">
+                    <option value="">-- Choose Blood Group --</option>
+                </select>
+                <span asp-validation-for="AdjustmentModel.BloodGroupId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="AdjustmentModel.UnitsDelta" class="form-label"></label>
+                <input asp-for="AdjustmentModel.UnitsDelta" class="form-control" type="number" placeholder="e.g. +5 or -2" />
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                    Positive number to add units; negative to deduct units.
+                </span>
+                <span asp-validation-for="AdjustmentModel.UnitsDelta" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="AdjustmentModel.Reason" class="form-label"></label>
+                <textarea asp-for="AdjustmentModel.Reason" class="form-control" rows="3" placeholder="Reason for inventory correction (required)..."></textarea>
+                <span asp-validation-for="AdjustmentModel.Reason" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                Apply Stock Adjustment
+            </button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,123 @@
+@model IEnumerable<BloodBankSystem.Models.Donation>
+@{
+    ViewData["Title"] = "Blood Donations";
+    var selectedStatus = ViewBag.SelectedStatus as BloodBankSystem.Models.DonationStatus?;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Blood Donations</h1>
+        <p class="page-subtitle">Track, record walk-in donations, and process scheduled donor visits</p>
+    </div>
+    <div>
+        <a asp-action="Record" class="btn btn-primary">+ Record Donation</a>
+    </div>
+</div>
+
+<!-- Status Filters -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+    <a asp-action="Index" class="btn btn-sm @(selectedStatus == null ? "btn-primary" : "btn-outline")">All Donations</a>
+    <a asp-action="Index" asp-route-status="@BloodBankSystem.Models.DonationStatus.Scheduled" class="btn btn-sm @(selectedStatus == BloodBankSystem.Models.DonationStatus.Scheduled ? "btn-primary" : "btn-outline")">Scheduled</a>
+    <a asp-action="Index" asp-route-status="@BloodBankSystem.Models.DonationStatus.Completed" class="btn btn-sm @(selectedStatus == BloodBankSystem.Models.DonationStatus.Completed ? "btn-primary" : "btn-outline")">Completed</a>
+    <a asp-action="Index" asp-route-status="@BloodBankSystem.Models.DonationStatus.Rejected" class="btn btn-sm @(selectedStatus == BloodBankSystem.Models.DonationStatus.Rejected ? "btn-primary" : "btn-outline")">Rejected</a>
+    <a asp-action="Index" asp-route-status="@BloodBankSystem.Models.DonationStatus.Cancelled" class="btn btn-sm @(selectedStatus == BloodBankSystem.Models.DonationStatus.Cancelled ? "btn-primary" : "btn-outline")">Cancelled</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Donor</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No donations found matching criteria.
+                    </td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>#@item.Id</td>
+                    <td><strong>@(item.Donor?.User?.FullName ?? "Unknown")</strong></td>
+                    <td><span style="font-weight: 700; color: var(--primary-color);">@item.BloodGroup?.Name</span></td>
+                    <td>@(item.Units > 0 ? item.Units.ToString() : "-")</td>
+                    <td>@item.DonationDate.ToLocalTime().ToString("d")</td>
+                    <td>
+                        @switch (item.Status)
+                        {
+                            case BloodBankSystem.Models.DonationStatus.Completed:
+                                <span class="badge badge-completed">Completed</span>
+                                break;
+                            case BloodBankSystem.Models.DonationStatus.Scheduled:
+                                <span class="badge badge-scheduled">Scheduled</span>
+                                break;
+                            case BloodBankSystem.Models.DonationStatus.Rejected:
+                                <span class="badge badge-rejected">Rejected</span>
+                                break;
+                            case BloodBankSystem.Models.DonationStatus.Cancelled:
+                                <span class="badge badge-cancelled">Cancelled</span>
+                                break;
+                        }
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--text-muted); max-width: 250px;">
+                        @(string.IsNullOrEmpty(item.Remarks) ? "-" : item.Remarks)
+                    </td>
+                    <td>
+                        @if (item.Status == BloodBankSystem.Models.DonationStatus.Scheduled)
+                        {
+                            <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                <!-- Complete Form -->
+                                <form asp-action="Complete" method="post" style="display: inline-flex; gap: 0.25rem;">
+                                    <input type="hidden" name="donationId" value="@item.Id" />
+                                    <input type="number" name="units" value="1" min="1" max="5" class="form-control" style="width: 55px; padding: 0.2rem 0.3rem; font-size: 0.8rem;" title="Units collected" />
+                                    <button type="submit" class="btn btn-sm btn-success" title="Complete & Add to Stock">Complete</button>
+                                </form>
+
+                                <!-- Reject Form -->
+                                <form asp-action="Reject" method="post" style="display: inline-flex; gap: 0.25rem;" onsubmit="return promptReject(this);">
+                                    <input type="hidden" name="donationId" value="@item.Id" />
+                                    <input type="hidden" name="reason" value="Medical deferral / screening failed" />
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject donation">Reject</button>
+                                </form>
+
+                                <!-- Cancel Form -->
+                                <form asp-action="Cancel" method="post" style="display: inline;">
+                                    <input type="hidden" name="donationId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline" title="Cancel scheduled slot">Cancel</button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">Locked</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function promptReject(form) {
+        var reason = prompt("Enter reason for rejecting this donation:");
+        if (!reason || reason.trim() === "") {
+            alert("A reason is required to reject a donation.");
+            return false;
+        }
+        form.elements["reason"].value = reason.trim();
+        return true;
+    }
+</script>

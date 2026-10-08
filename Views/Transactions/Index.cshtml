@@ -1,0 +1,77 @@
+@model IEnumerable<BloodBankSystem.Models.BloodTransaction>
+@{
+    ViewData["Title"] = "Transaction Audit Ledger";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Transaction Audit Ledger</h1>
+        <p class="page-subtitle">Showing latest 50 inventory transactions. All entries are immutable.</p>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tx ID</th>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Balance After</th>
+                <th>Remarks / Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                        No transactions recorded in the ledger yet.
+                    </td>
+                </tr>
+            }
+            @foreach (var tx in Model)
+            {
+                <tr>
+                    <td><code>#@tx.Id</code></td>
+                    <td style="font-size: 0.85rem;">@tx.TransactionDate.ToLocalTime().ToString("g")</td>
+                    <td>
+                        @switch (tx.Type)
+                        {
+                            case BloodBankSystem.Models.TransactionType.DonationIn:
+                                <span class="badge badge-issued">Donation In</span>
+                                break;
+                            case BloodBankSystem.Models.TransactionType.IssueOut:
+                                <span class="badge badge-rejected">Issue Out</span>
+                                break;
+                            case BloodBankSystem.Models.TransactionType.Adjustment:
+                                <span class="badge badge-urgent">Adjustment</span>
+                                break;
+                        }
+                    </td>
+                    <td><strong style="color: var(--primary-color);">@tx.BloodGroup?.Name</strong></td>
+                    <td>
+                        @if (tx.Type == BloodBankSystem.Models.TransactionType.DonationIn)
+                        {
+                            <span style="color: #2E7D32; font-weight: bold;">+@tx.Units</span>
+                        }
+                        else if (tx.Type == BloodBankSystem.Models.TransactionType.IssueOut)
+                        {
+                            <span style="color: #C62828; font-weight: bold;">-@tx.Units</span>
+                        }
+                        else
+                        {
+                            <span style="font-weight: bold;">@(tx.Units > 0 ? "+" + tx.Units : tx.Units.ToString())</span>
+                        }
+                    </td>
+                    <td><strong style="font-size: 1.05rem;">@tx.BalanceAfter</strong> units</td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 320px;">
+                        @(string.IsNullOrEmpty(tx.Remarks) ? "-" : tx.Remarks)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

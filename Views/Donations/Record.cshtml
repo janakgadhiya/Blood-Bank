@@ -1,0 +1,48 @@
+@model BloodBankSystem.ViewModels.RecordDonationViewModel
+@{
+    ViewData["Title"] = "Record Donation";
+}
+
+<div class="form-card">
+    <div style="margin-bottom: 1.5rem;">
+        <h2 class="page-title">Record Blood Donation</h2>
+        <p class="page-subtitle">Record an on-site donation. System will verify donor eligibility before adding to stock.</p>
+    </div>
+
+    <form asp-action="Record" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 1rem;"></div>
+
+        <div class="form-group">
+            <label asp-for="DonorId" class="form-label"></label>
+            <select asp-for="DonorId" asp-items="Model.DonorList" class="form-select">
+                <option value="">-- Select Active Donor --</option>
+            </select>
+            <span asp-validation-for="DonorId" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="Units" class="form-label"></label>
+                <input asp-for="Units" class="form-control" type="number" min="1" max="10" />
+                <span asp-validation-for="Units" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DonationDate" class="form-label"></label>
+                <input asp-for="DonationDate" class="form-control" type="date" />
+                <span asp-validation-for="DonationDate" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Remarks" class="form-label"></label>
+            <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Clinical notes, hemoglobin screening, etc. (optional)"></textarea>
+            <span asp-validation-for="Remarks" class="text-danger"></span>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Complete & Record Donation</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

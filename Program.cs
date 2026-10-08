@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using BloodBankSystem.Data;
 using BloodBankSystem.Models;
+using BloodBankSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +34,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-// 4. Add MVC Controllers with Views
+// 4. Add MVC Controllers with Views and Business Services
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IStockService, StockService>();
+builder.Services.AddScoped<IEligibilityService, EligibilityService>();
 
 var app = builder.Build();
 
