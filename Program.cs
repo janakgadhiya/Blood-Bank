@@ -68,4 +68,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+if (args.Contains("--verify"))
+{
+    var passed = await BloodBankSystem.AcceptanceTests.RunAsync(app.Services);
+    Environment.Exit(passed ? 0 : 1);
+}
+
 app.Run();
