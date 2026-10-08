@@ -1,15 +1,13 @@
 @model IEnumerable<BloodBankSystem.Models.BloodRequest>
 @{
-    ViewData["Title"] = "My Blood Requests";
+    ViewData["Title"] = "Blood Requests Queue";
+    var stockMap = ViewBag.StockMap as Dictionary<int, int> ?? new();
 }
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">My Blood Requests</h1>
-        <p class="page-subtitle">Track status and review responses from the blood bank</p>
-    </div>
-    <div>
-        <a asp-action="NewRequest" class="btn btn-primary">+ New Blood Request</a>
+        <h1 class="page-title">Blood Requests Queue</h1>
+        <p class="page-subtitle">Prioritized queue: Critical requests first, then Urgent, then Normal (oldest first)</p>
     </div>
 </div>
 
@@ -17,14 +15,14 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Request ID</th>
-                <th>Blood Group</th>
+                <th>Req ID</th>
+                <th>Priority</th>
+                <th>Group</th>
                 <th>Units</th>
-                <th>Urgency</th>
+                <th>In Stock</th>
+                <th>Patient / Hospital</th>
                 <th>Required By</th>
                 <th>Status</th>
-                <th>Admin Remarks</th>
-                <th>Submitted On</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -33,18 +31,19 @@
             {
                 <tr>
                     <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
-                        You have not submitted any blood requests yet. <a asp-action="NewRequest">Create your first request</a>.
+                        No blood requests found in the queue.
                     </td>
                 </tr>
             }
-            @foreach (var req in Model)
+            @foreach (var item in Model)
             {
-                <tr class="@(req.Urgency == BloodBankSystem.Models.RequestUrgency.Critical ? "row-critical" : (req.Urgency == BloodBankSystem.Models.RequestUrgency.Urgent ? "row-urgent" : ""))">
-                    <td><code>#@req.Id</code></td>
-                    <td><strong style="color: var(--primary-color);">@req.BloodGroup?.Name</strong></td>
-                    <td><strong>@req.UnitsRequired</strong></td>
+                var availableInStock = stockMap.ContainsKey(item.BloodGroupId) ? stockMap[item.BloodGroupId] : 0;
+                var isPendingOrApproved = item.Status == BloodBankSystem.Models.RequestStatus.Pending || item.Status == BloodBankSystem.Models.RequestStatus.Approved;
+
+                <tr class="@(isPendingOrApproved && item.Urgency == BloodBankSystem.Models.RequestUrgency.Critical ? "row-critical" : (isPendingOrApproved && item.Urgency == BloodBankSystem.Models.RequestUrgency.Urgent ? "row-urgent" : ""))">
+                    <td><code>#@item.Id</code></td>
                     <td>
-                        @switch (req.Urgency)
+                        @switch (item.Urgency)
                         {
                             case BloodBankSystem.Models.RequestUrgency.Critical:
                                 <span class="badge badge-critical">Critical</span>
@@ -57,9 +56,20 @@
                                 break;
                         }
                     </td>
-                    <td>@req.RequiredByDate.ToString("yyyy-MM-dd")</td>
+                    <td><strong style="color: var(--primary-color); font-size: 1.05rem;">@item.BloodGroup?.Name</strong></td>
+                    <td><strong>@item.UnitsRequired</strong></td>
                     <td>
-                        @switch (req.Status)
+                        <span style="font-weight: 600; color: @(availableInStock >= item.UnitsRequired ? "#2E7D32" : "#C62828");">
+                            @availableInStock units
+                        </span>
+                    </td>
+                    <td>
+                        <strong>@(item.Patient?.User?.FullName ?? "Unknown")</strong><br />
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">@(item.Patient?.HospitalName ?? "N/A")</span>
+                    </td>
+                    <td style="font-size: 0.85rem;">@item.RequiredByDate.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @switch (item.Status)
                         {
                             case BloodBankSystem.Models.RequestStatus.Pending:
                                 <span class="badge badge-pending">Pending</span>
@@ -78,24 +88,8 @@
                                 break;
                         }
                     </td>
-                    <td style="font-size: 0.85rem; color: var(--text-muted); max-width: 250px;">
-                        @(string.IsNullOrEmpty(req.AdminRemarks) ? "-" : req.AdminRemarks)
-                    </td>
-                    <td style="font-size: 0.82rem; color: var(--text-muted);">
-                        @req.CreatedAt.ToLocalTime().ToString("g")
-                    </td>
                     <td>
-                        @if (req.Status == BloodBankSystem.Models.RequestStatus.Pending)
-                        {
-                            <form asp-action="Cancel" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel request #@req.Id?');">
-                                <input type="hidden" name="id" value="@req.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">Completed</span>
-                        }
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline">Review Details</a>
                     </td>
                 </tr>
             }

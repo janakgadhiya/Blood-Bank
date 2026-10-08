@@ -1,9 +1,102 @@
+@model BloodBankSystem.ViewModels.CreateBloodRequestViewModel
 @{
-    ViewData["Title"] = "New Request";
+    ViewData["Title"] = "Request Blood";
 }
 
 <div class="page-header">
-    <h1 class="page-title">Request Blood</h1>
+    <div>
+        <h1 class="page-title">Submit Blood Request</h1>
+        <p class="page-subtitle">Request donor blood units for urgent patient treatment</p>
+    </div>
 </div>
 
-<p style="color: var(--text-muted);">Blood request form will be available here.</p>
+<div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; align-items: start;">
+    <!-- Blood Request Form -->
+    <div class="card card-primary">
+        <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">Blood Request Details</h3>
+
+        <form asp-action="NewRequest" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 1rem;"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="BloodGroupId" class="form-label"></label>
+                    <select asp-for="BloodGroupId" asp-items="Model.BloodGroupList" class="form-select">
+                        <option value="">-- Choose Blood Group --</option>
+                    </select>
+                    <span asp-validation-for="BloodGroupId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="UnitsRequired" class="form-label"></label>
+                    <input asp-for="UnitsRequired" class="form-control" type="number" min="1" max="50" />
+                    <span asp-validation-for="UnitsRequired" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Urgency" class="form-label"></label>
+                    <select asp-for="Urgency" class="form-select">
+                        <option value="@BloodBankSystem.Models.RequestUrgency.Normal">Normal</option>
+                        <option value="@BloodBankSystem.Models.RequestUrgency.Urgent">Urgent</option>
+                        <option value="@BloodBankSystem.Models.RequestUrgency.Critical">Critical (Immediate Need)</option>
+                    </select>
+                    <span asp-validation-for="Urgency" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="RequiredByDate" class="form-label"></label>
+                    <input asp-for="RequiredByDate" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="RequiredByDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Reason" class="form-label"></label>
+                <textarea asp-for="Reason" class="form-control" rows="3" placeholder="Clinical indication, emergency, transfusion requirement, surgery..."></textarea>
+                <span asp-validation-for="Reason" class="text-danger"></span>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Submit Request</button>
+                <a asp-action="MyRequests" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Live Blood Stock Reference Table -->
+    <div class="card">
+        <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">Current Stock Availability</h3>
+        <p class="card-desc" style="margin-bottom: 1rem;">
+            Real-time units currently in stock across blood groups:
+        </p>
+
+        <div class="table-responsive" style="margin-bottom: 0;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Available Units</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.AvailableStockSummary != null)
+                    {
+                        @foreach (var stock in Model.AvailableStockSummary)
+                        {
+                            <tr>
+                                <td><strong>@stock.BloodGroupName</strong></td>
+                                <td><strong>@stock.AvailableUnits</strong> units</td>
+                                <td>
+                                    <span class="badge @stock.StatusClass">@stock.Status</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

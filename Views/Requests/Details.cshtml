@@ -1,0 +1,210 @@
+@model BloodBankSystem.Models.BloodRequest
+@{
+    ViewData["Title"] = $"Request #{Model.Id} Details";
+    var liveStock = ViewBag.LiveStock as BloodBankSystem.Models.BloodStock;
+    var available = liveStock?.AvailableUnits ?? 0;
+    var hasSufficientStock = available >= Model.UnitsRequired;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Blood Request #@Model.Id</h1>
+        <p class="page-subtitle">Submitted by @(Model.Patient?.User?.FullName ?? "Patient") on @Model.CreatedAt.ToLocalTime().ToString("g")</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-secondary">← Back to Queue</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 1.5rem; align-items: start;">
+    <!-- Request & Patient Information -->
+    <div>
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">Request Details</h3>
+            <div class="form-row" style="margin-bottom: 0.75rem;">
+                <div>
+                    <label class="form-label">Requested Blood Group:</label>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: var(--primary-color);">@Model.BloodGroup?.Name</span>
+                </div>
+                <div>
+                    <label class="form-label">Units Required:</label>
+                    <span style="font-size: 1.2rem; font-weight: 700;">@Model.UnitsRequired units</span>
+                </div>
+                <div>
+                    <label class="form-label">Urgency:</label>
+                    @switch (Model.Urgency)
+                    {
+                        case BloodBankSystem.Models.RequestUrgency.Critical:
+                            <span class="badge badge-critical">Critical</span>
+                            break;
+                        case BloodBankSystem.Models.RequestUrgency.Urgent:
+                            <span class="badge badge-urgent">Urgent</span>
+                            break;
+                        case BloodBankSystem.Models.RequestUrgency.Normal:
+                            <span class="badge badge-normal">Normal</span>
+                            break;
+                    }
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 0.75rem;">
+                <div>
+                    <label class="form-label">Required By Date:</label>
+                    <span>@Model.RequiredByDate.ToString("yyyy-MM-dd")</span>
+                </div>
+                <div>
+                    <label class="form-label">Current Status:</label>
+                    @switch (Model.Status)
+                    {
+                        case BloodBankSystem.Models.RequestStatus.Pending:
+                            <span class="badge badge-pending">Pending</span>
+                            break;
+                        case BloodBankSystem.Models.RequestStatus.Approved:
+                            <span class="badge badge-approved">Approved</span>
+                            break;
+                        case BloodBankSystem.Models.RequestStatus.Issued:
+                            <span class="badge badge-issued">Issued</span>
+                            break;
+                        case BloodBankSystem.Models.RequestStatus.Rejected:
+                            <span class="badge badge-rejected">Rejected</span>
+                            break;
+                        case BloodBankSystem.Models.RequestStatus.Cancelled:
+                            <span class="badge badge-cancelled">Cancelled</span>
+                            break;
+                    }
+                </div>
+            </div>
+
+            <div style="margin-top: 0.75rem;">
+                <label class="form-label">Medical Reason:</label>
+                <p style="background: #F8F9FA; border: 1px solid var(--border-color); padding: 0.75rem; border-radius: var(--border-radius);">
+                    @Model.Reason
+                </p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.AdminRemarks))
+            {
+                <div style="margin-top: 1rem;">
+                    <label class="form-label">Admin Remarks / Notes:</label>
+                    <p style="background: #FFF8E1; border: 1px solid #FFE082; padding: 0.75rem; border-radius: var(--border-radius); color: #5D4037;">
+                        @Model.AdminRemarks
+                    </p>
+                </div>
+            }
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--primary-dark); margin-bottom: 0.75rem;">Patient & Facility Info</h3>
+            <div class="form-row">
+                <div>
+                    <label class="form-label">Patient Name:</label>
+                    <strong>@(Model.Patient?.User?.FullName ?? "N/A")</strong>
+                </div>
+                <div>
+                    <label class="form-label">Hospital / Clinic:</label>
+                    <span>@(Model.Patient?.HospitalName ?? "N/A")</span>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 0.5rem;">
+                <div>
+                    <label class="form-label">Phone:</label>
+                    <span>@(Model.Patient?.User?.Phone ?? "N/A")</span>
+                </div>
+                <div>
+                    <label class="form-label">City:</label>
+                    <span>@(Model.Patient?.User?.City ?? "N/A")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Inventory Status & Admin Actions -->
+    <div>
+        <div class="card @(hasSufficientStock ? "card-success" : "card-danger")" style="margin-bottom: 1.5rem; text-align: center;">
+            <div class="card-title">Live @Model.BloodGroup?.Name Stock Check</div>
+            <div class="card-value" style="color: @(hasSufficientStock ? "#2E7D32" : "#C62828");">
+                @available <span style="font-size: 1rem; font-weight: normal; color: var(--text-muted);">units available</span>
+            </div>
+            <div style="margin-top: 0.5rem;">
+                @if (hasSufficientStock)
+                {
+                    <span class="badge badge-issued">Sufficient Stock (Need @Model.UnitsRequired)</span>
+                }
+                else
+                {
+                    <span class="badge badge-rejected">Insufficient Stock (Need @Model.UnitsRequired)</span>
+                }
+            </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="card card-primary">
+            <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">Process Request</h3>
+
+            @if (Model.Status == BloodBankSystem.Models.RequestStatus.Pending)
+            {
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <!-- Approve Button -->
+                    <form asp-action="Approve" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-warning" style="width: 100%;" @(hasSufficientStock ? "" : "disabled") title="@(hasSufficientStock ? "Approve request" : "Insufficient stock to approve")">
+                            ✓ Approve Request
+                        </button>
+                    </form>
+
+                    <!-- Issue Button -->
+                    <form asp-action="Issue" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success" style="width: 100%;" @(hasSufficientStock ? "" : "disabled") title="@(hasSufficientStock ? "Issue units immediately" : "Insufficient stock to issue")">
+                            📦 Issue Blood Immediately
+                        </button>
+                    </form>
+                </div>
+
+                <hr style="margin: 1.25rem 0; border: none; border-top: 1px solid var(--border-color);" />
+
+                <!-- Reject Form -->
+                <form asp-action="Reject" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="form-group">
+                        <label class="form-label">Rejection Reason <span style="color: red;">*</span>:</label>
+                        <textarea name="adminRemarks" class="form-control" rows="2" placeholder="Mandatory remarks if rejecting..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">
+                        ✗ Reject Request
+                    </button>
+                </form>
+            }
+            else if (Model.Status == BloodBankSystem.Models.RequestStatus.Approved)
+            {
+                <p style="font-size: 0.9rem; color: #1565C0; margin-bottom: 1rem;">
+                    This request is <strong>Approved</strong>. Click below to issue the units and update the inventory ledger.
+                </p>
+
+                <form asp-action="Issue" method="post" style="margin-bottom: 1rem;">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-success" style="width: 100%;" @(hasSufficientStock ? "" : "disabled")>
+                        📦 Issue Blood (@Model.UnitsRequired units)
+                    </button>
+                </form>
+
+                <form asp-action="Reject" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="form-group">
+                        <label class="form-label">Rejection Reason <span style="color: red;">*</span>:</label>
+                        <textarea name="adminRemarks" class="form-control" rows="2" placeholder="Reason for revocation..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">
+                        ✗ Reject Request
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div style="text-align: center; color: var(--text-muted); padding: 1rem 0;">
+                    This request has been finalized as <strong>@Model.Status</strong>.
+                </div>
+            }
+        </div>
+    </div>
+</div>
