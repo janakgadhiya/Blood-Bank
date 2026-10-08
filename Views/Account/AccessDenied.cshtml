@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="form-card" style="text-align: center; max-width: 500px; padding: 2.5rem 1.5rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">🚫</div>
+    <h2 class="page-title" style="color: #C62828;">Access Denied</h2>
+    <p style="color: var(--text-muted); margin: 1rem 0 1.5rem 0;">
+        You do not have permission to view or access this page. Please log in with an authorized account or return to the home page.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Go to Home</a>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Log In</a>
+    </div>
+</div>

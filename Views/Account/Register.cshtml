@@ -1,0 +1,129 @@
+@model BloodBankSystem.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="form-card">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+        <h2 class="page-title">Create an Account</h2>
+        <p class="page-subtitle">Join as a Blood Donor or Register as a Patient</p>
+    </div>
+
+    <form asp-action="Register" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 1rem;"></div>
+
+        <div class="form-group">
+            <label asp-for="Role" class="form-label"></label>
+            <div style="display: flex; gap: 1.5rem; margin-top: 0.25rem;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                    <input type="radio" asp-for="Role" value="Donor" id="roleDonor" checked onchange="toggleRoleFields()" />
+                    <strong>Donor</strong> (I want to donate blood)
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                    <input type="radio" asp-for="Role" value="Patient" id="rolePatient" onchange="toggleRoleFields()" />
+                    <strong>Patient</strong> (I need blood)
+                </label>
+            </div>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" placeholder="e.g. John Doe" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="user@example.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" placeholder="Min 6 characters" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-type password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="Phone" class="form-label"></label>
+                <input asp-for="Phone" class="form-control" placeholder="e.g. 9876543210" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="City" class="form-label"></label>
+                <input asp-for="City" class="form-control" placeholder="e.g. Springfield" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="DateOfBirth" class="form-label"></label>
+                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Gender" class="form-label"></label>
+                <select asp-for="Gender" class="form-select">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="BloodGroupId" class="form-label"></label>
+            <select asp-for="BloodGroupId" asp-items="Model.BloodGroupList" class="form-select">
+                <option value="">-- Select Blood Group --</option>
+            </select>
+            <span asp-validation-for="BloodGroupId" class="text-danger"></span>
+        </div>
+
+        <!-- Donor-specific field -->
+        <div id="donorField" class="form-group">
+            <label asp-for="WeightKg" class="form-label"></label>
+            <input asp-for="WeightKg" class="form-control" placeholder="Weight in kg (min 50 kg to donate)" />
+            <span asp-validation-for="WeightKg" class="text-danger"></span>
+        </div>
+
+        <!-- Patient-specific field -->
+        <div id="patientField" class="form-group" style="display: none;">
+            <label asp-for="HospitalName" class="form-label"></label>
+            <input asp-for="HospitalName" class="form-control" placeholder="Hospital or Clinic Name" />
+            <span asp-validation-for="HospitalName" class="text-danger"></span>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Register Now</button>
+        </div>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem;">
+        Already have an account? <a asp-action="Login" style="color: var(--primary-color); font-weight: 600;">Log In</a>
+    </div>
+</div>
+
+<script>
+    function toggleRoleFields() {
+        var isDonor = document.getElementById('roleDonor').checked;
+        document.getElementById('donorField').style.display = isDonor ? 'block' : 'none';
+        document.getElementById('patientField').style.display = isDonor ? 'none' : 'block';
+    }
+    document.addEventListener('DOMContentLoaded', toggleRoleFields);
+</script>

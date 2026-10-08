@@ -1,8 +1,15 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="card card-primary" style="text-align: center; padding: 2.5rem 1.5rem; margin-bottom: 2rem;">
+    <h1 class="page-title" style="font-size: 2.2rem; margin-bottom: 0.5rem;">Save Lives, Donate Blood</h1>
+    <p class="page-subtitle" style="font-size: 1.1rem; max-width: 650px; margin: 0 auto 1.5rem auto;">
+        Connecting blood donors with patients in need. Check real-time blood group availability or register today to make a difference.
+    </p>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Become a Donor</a>
+        <a asp-controller="BloodSearch" asp-action="Index" class="btn btn-secondary">Search Blood Availability</a>
+    </div>
 </div>
