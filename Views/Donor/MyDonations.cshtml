@@ -1,9 +1,82 @@
+@model IEnumerable<BloodBankSystem.Models.Donation>
 @{
-    ViewData["Title"] = "My Donations";
+    ViewData["Title"] = "My Donation History";
 }
 
 <div class="page-header">
-    <h1 class="page-title">My Donation History</h1>
+    <div>
+        <h1 class="page-title">My Donation History</h1>
+        <p class="page-subtitle">Track your past donations and pending appointments</p>
+    </div>
+    <div>
+        <a asp-action="Dashboard" class="btn btn-primary">+ Schedule New Donation</a>
+    </div>
 </div>
 
-<p style="color: var(--text-muted);">No donations recorded yet.</p>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Donation Date</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                        No donations recorded yet. Schedule your first appointment from the <a asp-action="Dashboard">Dashboard</a>.
+                    </td>
+                </tr>
+            }
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td>#@d.Id</td>
+                    <td><strong style="color: var(--primary-color);">@d.BloodGroup?.Name</strong></td>
+                    <td>@(d.Units > 0 ? d.Units.ToString() : "-")</td>
+                    <td>@d.DonationDate.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @switch (d.Status)
+                        {
+                            case BloodBankSystem.Models.DonationStatus.Completed:
+                                <span class="badge badge-completed">Completed</span>
+                                break;
+                            case BloodBankSystem.Models.DonationStatus.Scheduled:
+                                <span class="badge badge-scheduled">Scheduled</span>
+                                break;
+                            case BloodBankSystem.Models.DonationStatus.Rejected:
+                                <span class="badge badge-rejected">Rejected</span>
+                                break;
+                            case BloodBankSystem.Models.DonationStatus.Cancelled:
+                                <span class="badge badge-cancelled">Cancelled</span>
+                                break;
+                        }
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--text-muted); max-width: 250px;">
+                        @(string.IsNullOrEmpty(d.Remarks) ? "-" : d.Remarks)
+                    </td>
+                    <td>
+                        @if (d.Status == BloodBankSystem.Models.DonationStatus.Scheduled)
+                        {
+                            <form asp-action="CancelDonation" method="post" style="display:inline;" onsubmit="return confirm('Cancel this scheduled appointment?');">
+                                <input type="hidden" name="donationId" value="@d.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Recorded</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,37 @@
+@model IEnumerable<BloodBankSystem.Models.BloodGroup>
+@{
+    ViewData["Title"] = "Blood Groups";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Blood Group Management</h1>
+        <p class="page-subtitle">Standard system blood groups and linked inventory</p>
+    </div>
+</div>
+
+<div class="table-responsive" style="max-width: 650px;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Blood Group Name</th>
+                <th>Stock Units</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model)
+            {
+                <tr>
+                    <td>#@g.Id</td>
+                    <td><strong style="color: var(--primary-color); font-size: 1.15rem;">@g.Name</strong></td>
+                    <td>@(g.BloodStock?.AvailableUnits ?? 0) units</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@g.Id" class="btn btn-sm btn-outline">Edit Name</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

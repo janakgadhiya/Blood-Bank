@@ -1,0 +1,98 @@
+@model BloodBankSystem.Models.Donor
+@{
+    ViewData["Title"] = $"Donor - {Model.User.FullName}";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Donor: @Model.User.FullName</h1>
+        <p class="page-subtitle">Account status: @(Model.IsActive ? "Active" : "Inactive")</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.5rem; align-items: start;">
+    <!-- Profile Info Card -->
+    <div class="card card-primary">
+        <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">Profile Overview</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>Email:</strong> @Model.User.Email</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Phone:</strong> @Model.User.Phone</p>
+        <p style="margin-bottom: 0.5rem;"><strong>City:</strong> @Model.User.City</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Gender:</strong> @Model.User.Gender</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Date of Birth:</strong> @Model.User.DateOfBirth.ToString("yyyy-MM-dd")</p>
+        <p style="margin-bottom: 0.5rem;">
+            <strong>Blood Group:</strong> 
+            <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary-color);">@Model.BloodGroup?.Name</span>
+        </p>
+        <p style="margin-bottom: 0.5rem;"><strong>Weight:</strong> @Model.WeightKg.ToString("F1") kg</p>
+        <p style="margin-bottom: 1rem;">
+            <strong>Last Donation:</strong> 
+            @(Model.LastDonationDate.HasValue ? Model.LastDonationDate.Value.ToString("yyyy-MM-dd") : "None recorded")
+        </p>
+
+        <form asp-action="ToggleStatus" method="post" style="margin-top: 1rem;">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn @(Model.IsActive ? "btn-danger" : "btn-success")" style="width: 100%;">
+                @(Model.IsActive ? "Deactivate Donor Account" : "Activate Donor Account")
+            </button>
+        </form>
+    </div>
+
+    <!-- Donation History -->
+    <div>
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.75rem;">Donation Records</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Units</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Donations.Any())
+                    {
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                No donations recorded for this donor.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var d in Model.Donations.OrderByDescending(d => d.DonationDate))
+                    {
+                        <tr>
+                            <td>#@d.Id</td>
+                            <td>@d.DonationDate.ToString("yyyy-MM-dd")</td>
+                            <td>@d.Units</td>
+                            <td>
+                                @switch (d.Status)
+                                {
+                                    case BloodBankSystem.Models.DonationStatus.Completed:
+                                        <span class="badge badge-completed">Completed</span>
+                                        break;
+                                    case BloodBankSystem.Models.DonationStatus.Scheduled:
+                                        <span class="badge badge-scheduled">Scheduled</span>
+                                        break;
+                                    case BloodBankSystem.Models.DonationStatus.Rejected:
+                                        <span class="badge badge-rejected">Rejected</span>
+                                        break;
+                                    case BloodBankSystem.Models.DonationStatus.Cancelled:
+                                        <span class="badge badge-cancelled">Cancelled</span>
+                                        break;
+                                }
+                            </td>
+                            <td style="font-size: 0.82rem; color: var(--text-muted);">
+                                @(string.IsNullOrEmpty(d.Remarks) ? "-" : d.Remarks)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

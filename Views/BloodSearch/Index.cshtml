@@ -1,9 +1,58 @@
+@model BloodBankSystem.ViewModels.StockItemViewModel?
 @{
-    ViewData["Title"] = "Search Blood";
+    ViewData["Title"] = "Search Blood Availability";
 }
 
 <div class="page-header">
-    <h1 class="page-title">Search Blood Availability</h1>
+    <div>
+        <h1 class="page-title">Search Blood Availability</h1>
+        <p class="page-subtitle">Verify live blood inventory by selecting a blood type</p>
+    </div>
 </div>
 
-<p style="color: var(--text-muted);">Search blood group availability feature will be available here.</p>
+<div class="form-card" style="max-width: 600px; margin-bottom: 2rem;">
+    <form asp-action="Index" method="get">
+        <div class="form-group">
+            <label class="form-label">Select Blood Group:</label>
+            <div style="display: flex; gap: 0.75rem;">
+                <select name="bloodGroupId" asp-items="@ViewBag.BloodGroupSelectList" class="form-select" required>
+                    <option value="">-- Choose Blood Group --</option>
+                </select>
+                <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Check Stock</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@if (Model != null)
+{
+    <div style="max-width: 550px; margin: 0 auto;">
+        <div class="card @(Model.AvailableUnits == 0 ? "card-danger" : (Model.Status == "Low" ? "card-warning" : "card-success"))" style="text-align: center; padding: 2rem;">
+            <div class="card-title">Blood Group Result</div>
+            <div style="font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 0.5rem 0;">
+                @Model.BloodGroupName
+            </div>
+            <div class="card-value" style="font-size: 2rem; color: @(Model.AvailableUnits == 0 ? "#C62828" : (Model.Status == "Low" ? "#E65100" : "#2E7D32"))">
+                @Model.AvailableUnits <span style="font-size: 1.1rem; font-weight: normal; color: var(--text-muted);">units available</span>
+            </div>
+            <div style="margin: 0.75rem 0 1.25rem 0;">
+                <span class="badge @Model.StatusClass" style="font-size: 0.95rem; padding: 0.35rem 0.85rem;">@Model.Status</span>
+            </div>
+
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+                Inventory last synced: @Model.LastUpdated.ToLocalTime().ToString("g")
+            </p>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center;">
+                @if (User.IsInRole("Patient"))
+                {
+                    <a asp-controller="Patient" asp-action="NewRequest" class="btn btn-primary">Request This Blood Group</a>
+                }
+                else if (!User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Register to Request Blood</a>
+                }
+            </div>
+        </div>
+    </div>
+}

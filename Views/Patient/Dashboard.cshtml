@@ -1,17 +1,83 @@
 @{
     ViewData["Title"] = "Patient Dashboard";
+    var patient = ViewBag.Patient as BloodBankSystem.Models.Patient;
+    var pendingCount = ViewBag.PendingCount as int? ?? 0;
+    var approvedCount = ViewBag.ApprovedCount as int? ?? 0;
+    var issuedCount = ViewBag.IssuedCount as int? ?? 0;
+    var rejectedCount = ViewBag.RejectedCount as int? ?? 0;
 }
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Patient Dashboard</h1>
-        <p class="page-subtitle">Welcome to your patient portal</p>
+        <p class="page-subtitle">Welcome, @(patient?.User?.FullName ?? "Patient") (@(patient?.HospitalName ?? "Facility"))</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a asp-action="NewRequest" class="btn btn-primary">+ New Blood Request</a>
+        <a asp-action="Profile" class="btn btn-outline">Edit Profile</a>
     </div>
 </div>
 
-<div class="card card-primary">
-    <h3>Welcome, Patient!</h3>
-    <p style="margin-top: 0.5rem; color: var(--text-muted);">
-        From here you can request blood, track your active requests, and manage your contact details.
-    </p>
+<!-- Request Metric Cards -->
+<div class="card-grid">
+    <div class="card card-warning" style="text-align: center;">
+        <div class="card-title">Pending Requests</div>
+        <div class="card-value" style="color: #F57F17;">@pendingCount</div>
+        <div class="card-desc">Under medical review</div>
+    </div>
+
+    <div class="card card-primary" style="text-align: center;">
+        <div class="card-title">Approved Requests</div>
+        <div class="card-value" style="color: #1565C0;">@approvedCount</div>
+        <div class="card-desc">Stock reserved for pickup</div>
+    </div>
+
+    <div class="card card-success" style="text-align: center;">
+        <div class="card-title">Issued Units</div>
+        <div class="card-value" style="color: #2E7D32;">@issuedCount</div>
+        <div class="card-desc">Fulfilled & transferred</div>
+    </div>
+
+    <div class="card card-danger" style="text-align: center;">
+        <div class="card-title">Rejected Requests</div>
+        <div class="card-value" style="color: #C62828;">@rejectedCount</div>
+        <div class="card-desc">Declined with remarks</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; align-items: start;">
+    <div class="card">
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.75rem;">Registered Patient Profile</h3>
+        <div class="form-row">
+            <div>
+                <label class="form-label">Blood Group:</label>
+                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">@patient?.BloodGroup?.Name</span>
+            </div>
+            <div>
+                <label class="form-label">Hospital / Treatment Center:</label>
+                <strong>@(patient?.HospitalName ?? "Not specified")</strong>
+            </div>
+        </div>
+        <div class="form-row" style="margin-top: 0.75rem;">
+            <div>
+                <label class="form-label">Contact Phone:</label>
+                <span>@(patient?.User?.Phone ?? "N/A")</span>
+            </div>
+            <div>
+                <label class="form-label">City:</label>
+                <span>@(patient?.User?.City ?? "N/A")</span>
+            </div>
+        </div>
+        <div style="margin-top: 1.25rem;">
+            <a asp-action="MyRequests" class="btn btn-outline">View Complete Request History →</a>
+        </div>
+    </div>
+
+    <div class="card card-primary">
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.5rem;">Need Blood Urgently?</h3>
+        <p class="card-desc" style="margin-bottom: 1.25rem;">
+            Submit a request with urgency marked as <strong>Critical</strong> or <strong>Urgent</strong>. Our system prioritizes critical hospital needs immediately.
+        </p>
+        <a asp-action="NewRequest" class="btn btn-primary" style="width: 100%;">Create New Request Now</a>
+    </div>
 </div>

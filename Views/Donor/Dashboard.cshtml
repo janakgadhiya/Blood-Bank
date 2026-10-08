@@ -1,17 +1,146 @@
 @{
     ViewData["Title"] = "Donor Dashboard";
+    var donor = ViewBag.Donor as BloodBankSystem.Models.Donor;
+    var eligibility = ViewBag.Eligibility as BloodBankSystem.Services.EligibilityResult;
+    var totalDonations = ViewBag.TotalDonations as int? ?? 0;
+    var scheduled = ViewBag.ScheduledDonation as BloodBankSystem.Models.Donation;
 }
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Donor Dashboard</h1>
-        <p class="page-subtitle">Welcome to your donor portal</p>
+        <p class="page-subtitle">Welcome back, @(donor?.User?.FullName ?? "Donor")</p>
+    </div>
+    <div>
+        <a asp-action="Profile" class="btn btn-outline">Edit Profile</a>
     </div>
 </div>
 
-<div class="card card-primary" style="margin-bottom: 1.5rem;">
-    <h3>Welcome, Donor!</h3>
-    <p style="margin-top: 0.5rem; color: var(--text-muted);">
-        From here you can check your donation eligibility, schedule upcoming donations, and review your donation history.
-    </p>
+<!-- Eligibility Banner -->
+@if (eligibility != null)
+{
+    @if (eligibility.IsEligible)
+    {
+        <div class="alert alert-success" style="align-items: center;">
+            <div>
+                <strong>✓ You are currently eligible to donate blood!</strong>
+                <p style="font-size: 0.88rem; margin-top: 0.2rem;">You meet all criteria: age $\ge$ 18, weight $\ge$ 50kg, and at least 90 days since last donation.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" style="align-items: center;">
+            <div>
+                <strong>⚠ Donation Deferral / Ineligible:</strong> @eligibility.Reason
+                @if (eligibility.NextEligibleDate.HasValue)
+                {
+                    <p style="font-size: 0.88rem; margin-top: 0.25rem;">
+                        <strong>Next Eligible Donation Date:</strong> @eligibility.NextEligibleDate.Value.ToString("yyyy-MM-dd")
+                    </p>
+                }
+            </div>
+        </div>
+    }
+}
+
+<!-- Metrics Cards -->
+<div class="card-grid">
+    <div class="card card-primary" style="text-align: center;">
+        <div class="card-title">Blood Group</div>
+        <div class="card-value" style="color: var(--primary-color);">@donor?.BloodGroup?.Name</div>
+        <div class="card-desc">Registered donor blood type</div>
+    </div>
+
+    <div class="card card-success" style="text-align: center;">
+        <div class="card-title">Total Donations</div>
+        <div class="card-value" style="color: #2E7D32;">@totalDonations</div>
+        <div class="card-desc">Completed blood donations</div>
+    </div>
+
+    <div class="card card-warning" style="text-align: center;">
+        <div class="card-title">Last Donation</div>
+        <div style="font-size: 1.4rem; font-weight: 700; margin: 0.5rem 0; color: #E65100;">
+            @(donor?.LastDonationDate.HasValue == true ? donor.LastDonationDate.Value.ToString("yyyy-MM-dd") : "None yet")
+        </div>
+        <div class="card-desc">Most recent completed donation</div>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <div class="card-title">Recorded Weight</div>
+        <div class="card-value">@donor?.WeightKg.ToString("F1") <span style="font-size: 1rem; color: var(--text-muted);">kg</span></div>
+        <div class="card-desc">Min required: 50.0 kg</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; align-items: start;">
+    <!-- Schedule Donation Card -->
+    <div class="card card-primary">
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.5rem;">Schedule an Appointment</h3>
+        <p class="card-desc" style="margin-bottom: 1.25rem;">
+            Book a blood donation slot. Scheduling is blocked if you do not meet current eligibility requirements.
+        </p>
+
+        @if (scheduled != null)
+        {
+            <div class="alert alert-info">
+                <div>
+                    <strong>You have an active scheduled appointment!</strong>
+                    <p style="font-size: 0.88rem; margin-top: 0.25rem;">
+                        Date: <strong>@scheduled.DonationDate.ToString("yyyy-MM-dd")</strong> (Blood Group: @donor?.BloodGroup?.Name)
+                    </p>
+                    <form asp-action="CancelDonation" method="post" style="margin-top: 0.5rem;">
+                        <input type="hidden" name="donationId" value="@scheduled.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Cancel Appointment</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (eligibility != null && !eligibility.IsEligible)
+        {
+            <div style="background-color: #F8F9FA; border: 1px dashed var(--border-color); padding: 1.25rem; border-radius: var(--border-radius); text-align: center;">
+                <p style="color: #C62828; font-weight: 600; margin-bottom: 0.5rem;">Scheduling is currently unavailable</p>
+                <p style="font-size: 0.88rem; color: var(--text-muted);">
+                    @eligibility.Reason
+                    @if (eligibility.NextEligibleDate.HasValue)
+                    {
+                        <br /><span>Please return on or after <strong>@eligibility.NextEligibleDate.Value.ToString("yyyy-MM-dd")</strong>.</span>
+                    }
+                </p>
+            </div>
+        }
+        else
+        {
+            <form asp-action="Schedule" method="post">
+                <div class="form-group">
+                    <label class="form-label">Preferred Donation Date:</label>
+                    <input type="date" name="donationDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes / Preferences (optional):</label>
+                    <textarea name="remarks" class="form-control" rows="2" placeholder="Preferred time or notes for medical staff..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Confirm Scheduled Donation
+                </button>
+            </form>
+        }
+    </div>
+
+    <!-- Quick Links & Tips -->
+    <div class="card">
+        <h3 style="margin-bottom: 0.75rem;">Donation Guidelines</h3>
+        <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: #495057; line-height: 1.8;">
+            <li>Hydrate well with 16-24 oz of water before donating.</li>
+            <li>Eat a nutritious, non-fatty meal 2-3 hours prior.</li>
+            <li>Must weigh at least 50 kg (110 lbs).</li>
+            <li>A minimum gap of 90 days is required between whole blood donations.</li>
+            <li>Bring valid photo ID upon arrival.</li>
+        </ul>
+        <div style="margin-top: 1.25rem; text-align: center;">
+            <a asp-action="MyDonations" class="btn btn-outline" style="width: 100%;">View Donation History</a>
+        </div>
+    </div>
 </div>

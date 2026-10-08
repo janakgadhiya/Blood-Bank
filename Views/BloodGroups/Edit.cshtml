@@ -1,0 +1,29 @@
+@model BloodBankSystem.Models.BloodGroup
+@{
+    ViewData["Title"] = $"Edit Blood Group {Model.Name}";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Edit Blood Group</h1>
+        <p class="page-subtitle">Update nomenclature for @Model.Name</p>
+    </div>
+</div>
+
+<div class="form-card" style="max-width: 450px;">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 1rem;"></div>
+
+        <div class="form-group">
+            <label class="form-label">Blood Group Name:</label>
+            <input type="text" name="name" value="@Model.Name" class="form-control" required maxlength="10" />
+            <span class="text-danger">@Html.ValidationMessage("Name")</span>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

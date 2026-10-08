@@ -1,0 +1,97 @@
+@model IEnumerable<BloodBankSystem.Models.Donor>
+@{
+    ViewData["Title"] = "Donor Directory";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Donor Directory</h1>
+        <p class="page-subtitle">Search registered donors, review health records, and manage accounts</p>
+    </div>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+    <form asp-action="Index" method="get" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 220px;">
+            <label class="form-label">Search by Name, Email, or Phone:</label>
+            <input type="text" name="search" value="@ViewBag.CurrentSearch" placeholder="e.g. John Doe, 555-0101..." class="form-control" />
+        </div>
+
+        <div style="min-width: 180px;">
+            <label class="form-label">Filter by Blood Group:</label>
+            <select name="bloodGroupId" asp-items="@ViewBag.BloodGroupSelectList" class="form-select">
+                <option value="">-- All Blood Groups --</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Index" class="btn btn-outline">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Blood Group</th>
+                <th>Weight</th>
+                <th>Phone / City</th>
+                <th>Last Donation</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                        No donors found matching criteria.
+                    </td>
+                </tr>
+            }
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td>#@d.Id</td>
+                    <td>
+                        <strong>@d.User.FullName</strong><br />
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">@d.User.Email</span>
+                    </td>
+                    <td><strong style="color: var(--primary-color); font-size: 1.05rem;">@d.BloodGroup?.Name</strong></td>
+                    <td>@d.WeightKg.ToString("F1") kg</td>
+                    <td style="font-size: 0.85rem;">@d.User.Phone<br /><span style="color: var(--text-muted);">@d.User.City</span></td>
+                    <td style="font-size: 0.85rem;">
+                        @(d.LastDonationDate.HasValue ? d.LastDonationDate.Value.ToString("yyyy-MM-dd") : "Never")
+                    </td>
+                    <td>
+                        @if (d.IsActive)
+                        {
+                            <span class="badge badge-issued">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-cancelled">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.35rem;">
+                            <a asp-action="Details" asp-route-id="@d.Id" class="btn btn-sm btn-outline">Details</a>
+                            <form asp-action="ToggleStatus" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@d.Id" />
+                                <button type="submit" class="btn btn-sm @(d.IsActive ? "btn-danger" : "btn-success")">
+                                    @(d.IsActive ? "Deactivate" : "Activate")
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

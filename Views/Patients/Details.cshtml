@@ -1,0 +1,112 @@
+@model BloodBankSystem.Models.Patient
+@{
+    ViewData["Title"] = $"Patient - {Model.User.FullName}";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Patient: @Model.User.FullName</h1>
+        <p class="page-subtitle">Account status: @(Model.IsActive ? "Active" : "Inactive")</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a asp-action="Index" class="btn btn-secondary">← Back to List</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.5rem; align-items: start;">
+    <!-- Profile Info Card -->
+    <div class="card card-primary">
+        <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">Patient Overview</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>Email:</strong> @Model.User.Email</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Phone:</strong> @Model.User.Phone</p>
+        <p style="margin-bottom: 0.5rem;"><strong>City:</strong> @Model.User.City</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Hospital / Facility:</strong> @Model.HospitalName</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Gender:</strong> @Model.User.Gender</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Date of Birth:</strong> @Model.User.DateOfBirth.ToString("yyyy-MM-dd")</p>
+        <p style="margin-bottom: 1rem;">
+            <strong>Blood Group:</strong> 
+            <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary-color);">@Model.BloodGroup?.Name</span>
+        </p>
+
+        <form asp-action="ToggleStatus" method="post" style="margin-top: 1rem;">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn @(Model.IsActive ? "btn-danger" : "btn-success")" style="width: 100%;">
+                @(Model.IsActive ? "Deactivate Patient Account" : "Activate Patient Account")
+            </button>
+        </form>
+    </div>
+
+    <!-- Blood Requests History -->
+    <div>
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.75rem;">Blood Requests Submitted</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Urgency</th>
+                        <th>Units</th>
+                        <th>Required By</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.BloodRequests.Any())
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                No blood requests submitted by this patient yet.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var r in Model.BloodRequests.OrderByDescending(r => r.CreatedAt))
+                    {
+                        <tr>
+                            <td>#@r.Id</td>
+                            <td>
+                                @switch (r.Urgency)
+                                {
+                                    case BloodBankSystem.Models.RequestUrgency.Critical:
+                                        <span class="badge badge-critical">Critical</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestUrgency.Urgent:
+                                        <span class="badge badge-urgent">Urgent</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestUrgency.Normal:
+                                        <span class="badge badge-normal">Normal</span>
+                                        break;
+                                }
+                            </td>
+                            <td>@r.UnitsRequired</td>
+                            <td>@r.RequiredByDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @switch (r.Status)
+                                {
+                                    case BloodBankSystem.Models.RequestStatus.Pending:
+                                        <span class="badge badge-pending">Pending</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Approved:
+                                        <span class="badge badge-approved">Approved</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Issued:
+                                        <span class="badge badge-issued">Issued</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Rejected:
+                                        <span class="badge badge-rejected">Rejected</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Cancelled:
+                                        <span class="badge badge-cancelled">Cancelled</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                <a asp-controller="Requests" asp-action="Details" asp-route-id="@r.Id" class="btn btn-sm btn-outline">Review</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,17 +1,188 @@
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Admin Overview Dashboard";
+    var totalDonors = ViewBag.TotalDonors as int? ?? 0;
+    var totalPatients = ViewBag.TotalPatients as int? ?? 0;
+    var totalAvailableUnits = ViewBag.TotalAvailableUnits as int? ?? 0;
+    var pendingRequests = ViewBag.PendingRequests as int? ?? 0;
+    var urgentAndCriticalPending = ViewBag.UrgentAndCriticalPending as int? ?? 0;
+    var donationsToday = ViewBag.DonationsToday as int? ?? 0;
+    var lowStockGroups = ViewBag.LowStockGroups as List<BloodBankSystem.Models.BloodStock> ?? new();
+    var latestRequests = ViewBag.LatestRequests as List<BloodBankSystem.Models.BloodRequest> ?? new();
 }
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Admin Dashboard</h1>
-        <p class="page-subtitle">Central Blood Bank Administration</p>
+        <h1 class="page-title">Hospital Blood Bank Dashboard</h1>
+        <p class="page-subtitle">Real-time operational overview: inventory, donors, patients, and queue</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a asp-controller="Stock" asp-action="Index" class="btn btn-outline">Manage Stock</a>
+        <a asp-controller="Requests" asp-action="Index" class="btn btn-primary">Process Requests</a>
     </div>
 </div>
 
-<div class="card card-primary">
-    <h3>Welcome, Administrator!</h3>
-    <p style="margin-top: 0.5rem; color: var(--text-muted);">
-        From here you can oversee donors, patients, blood stock inventory, incoming donations, blood requests, and audit transactions.
-    </p>
+<!-- 6 Number Cards -->
+<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    <div class="card card-primary" style="text-align: center;">
+        <div class="card-title">Total Donors</div>
+        <div class="card-value" style="color: var(--primary-color);">@totalDonors</div>
+        <div class="card-desc">Active registered donors</div>
+    </div>
+
+    <div class="card card-primary" style="text-align: center;">
+        <div class="card-title">Total Patients</div>
+        <div class="card-value" style="color: var(--primary-color);">@totalPatients</div>
+        <div class="card-desc">Registered patient accounts</div>
+    </div>
+
+    <div class="card card-success" style="text-align: center;">
+        <div class="card-title">Available Units</div>
+        <div class="card-value" style="color: #2E7D32;">@totalAvailableUnits</div>
+        <div class="card-desc">Total across all groups</div>
+    </div>
+
+    <div class="card card-warning" style="text-align: center;">
+        <div class="card-title">Pending Requests</div>
+        <div class="card-value" style="color: #F57F17;">@pendingRequests</div>
+        <div class="card-desc">Awaiting medical review</div>
+    </div>
+
+    <div class="card card-danger" style="text-align: center;">
+        <div class="card-title">Urgent / Critical</div>
+        <div class="card-value" style="color: #C62828;">@urgentAndCriticalPending</div>
+        <div class="card-desc">Priority pending queue</div>
+    </div>
+
+    <div class="card card-success" style="text-align: center;">
+        <div class="card-title">Donations Today</div>
+        <div class="card-value" style="color: #2E7D32;">@donationsToday</div>
+        <div class="card-desc">Completed today</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.1fr 1.9fr; gap: 1.5rem; align-items: start; margin-top: 1rem;">
+    <!-- Low Stock Groups -->
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h3 style="color: #C62828;">⚠ Low & Depleted Blood Groups</h3>
+            <a asp-controller="Stock" asp-action="Index" style="font-size: 0.85rem; color: var(--primary-color); font-weight: 600;">All Stock →</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Available</th>
+                        <th>Min Level</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!lowStockGroups.Any())
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #2E7D32; padding: 1.5rem;">
+                                ✓ All blood group inventory levels are healthy!
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var s in lowStockGroups)
+                    {
+                        <tr class="@(s.AvailableUnits == 0 ? "row-critical" : "row-urgent")">
+                            <td><strong style="color: var(--primary-color);">@s.BloodGroup?.Name</strong></td>
+                            <td><strong style="font-size: 1.05rem;">@s.AvailableUnits</strong></td>
+                            <td>@s.MinimumLevel units</td>
+                            <td>
+                                @if (s.AvailableUnits == 0)
+                                {
+                                    <span class="badge badge-out">Out of Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-low">Low Stock</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5 Latest Requests -->
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h3 style="color: var(--primary-dark);">Latest Blood Requests</h3>
+            <a asp-controller="Requests" asp-action="Index" style="font-size: 0.85rem; color: var(--primary-color); font-weight: 600;">View Queue →</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Req ID</th>
+                        <th>Priority</th>
+                        <th>Group</th>
+                        <th>Units</th>
+                        <th>Patient</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!latestRequests.Any())
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                No recent requests submitted.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var r in latestRequests)
+                    {
+                        <tr class="@(r.Urgency == BloodBankSystem.Models.RequestUrgency.Critical ? "row-critical" : (r.Urgency == BloodBankSystem.Models.RequestUrgency.Urgent ? "row-urgent" : ""))">
+                            <td><code>#@r.Id</code></td>
+                            <td>
+                                @switch (r.Urgency)
+                                {
+                                    case BloodBankSystem.Models.RequestUrgency.Critical:
+                                        <span class="badge badge-critical">Critical</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestUrgency.Urgent:
+                                        <span class="badge badge-urgent">Urgent</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestUrgency.Normal:
+                                        <span class="badge badge-normal">Normal</span>
+                                        break;
+                                }
+                            </td>
+                            <td><strong style="color: var(--primary-color);">@r.BloodGroup?.Name</strong></td>
+                            <td><strong>@r.UnitsRequired</strong></td>
+                            <td>@(r.Patient?.User?.FullName ?? "Unknown")</td>
+                            <td>
+                                @switch (r.Status)
+                                {
+                                    case BloodBankSystem.Models.RequestStatus.Pending:
+                                        <span class="badge badge-pending">Pending</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Approved:
+                                        <span class="badge badge-approved">Approved</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Issued:
+                                        <span class="badge badge-issued">Issued</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Rejected:
+                                        <span class="badge badge-rejected">Rejected</span>
+                                        break;
+                                    case BloodBankSystem.Models.RequestStatus.Cancelled:
+                                        <span class="badge badge-cancelled">Cancelled</span>
+                                        break;
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

@@ -1,0 +1,93 @@
+@model IEnumerable<BloodBankSystem.Models.Patient>
+@{
+    ViewData["Title"] = "Patient Directory";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Patient Directory</h1>
+        <p class="page-subtitle">Search registered patients, hospitals, and manage account statuses</p>
+    </div>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+    <form asp-action="Index" method="get" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 220px;">
+            <label class="form-label">Search by Name, Hospital, or Phone:</label>
+            <input type="text" name="search" value="@ViewBag.CurrentSearch" placeholder="e.g. Jane, General Hospital..." class="form-control" />
+        </div>
+
+        <div style="min-width: 180px;">
+            <label class="form-label">Filter by Blood Group:</label>
+            <select name="bloodGroupId" asp-items="@ViewBag.BloodGroupSelectList" class="form-select">
+                <option value="">-- All Blood Groups --</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Index" class="btn btn-outline">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Patient Name</th>
+                <th>Hospital / Facility</th>
+                <th>Blood Group</th>
+                <th>Phone / City</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                        No patients found matching criteria.
+                    </td>
+                </tr>
+            }
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>#@p.Id</td>
+                    <td>
+                        <strong>@p.User.FullName</strong><br />
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">@p.User.Email</span>
+                    </td>
+                    <td><strong>@p.HospitalName</strong></td>
+                    <td><strong style="color: var(--primary-color); font-size: 1.05rem;">@p.BloodGroup?.Name</strong></td>
+                    <td style="font-size: 0.85rem;">@p.User.Phone<br /><span style="color: var(--text-muted);">@p.User.City</span></td>
+                    <td>
+                        @if (p.IsActive)
+                        {
+                            <span class="badge badge-issued">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-cancelled">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.35rem;">
+                            <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline">Details</a>
+                            <form asp-action="ToggleStatus" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@p.Id" />
+                                <button type="submit" class="btn btn-sm @(p.IsActive ? "btn-danger" : "btn-success")">
+                                    @(p.IsActive ? "Deactivate" : "Activate")
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
