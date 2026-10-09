@@ -38,12 +38,6 @@ A web-based Blood Bank Management System built with **ASP.NET Core MVC**, **C#**
 
 ## 3. Seeded Accounts & Credentials
 
-### Administrator Account
-- **Email**: `admin@bloodbank.com`
-- **Password**: `Admin@123`
-
-> [!WARNING]
-> The seeded admin account is provided for demonstration and initial evaluation. For production environments, this password must be changed immediately.
 
 ### Demo Accounts (enabled via `"BloodBank:SeedDemoData": true` in `appsettings.json`)
 - **Donor 1 (Alice Smith, O+, eligible)**:
