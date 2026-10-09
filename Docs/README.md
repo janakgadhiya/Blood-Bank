@@ -87,7 +87,7 @@ A web-based Blood Bank Management System built with **ASP.NET Core MVC**, **C#**
 - **Admin Dashboard** (`/Admin/Dashboard`): Operational number cards (Total Donors, Total Patients, Available Units, Pending Requests, Urgent/Critical Requests, Donations Today), list of low-stock blood groups, and top 5 recent requests.
 - **Stock Management** (`/Admin/Stock`): Full table of all 8 blood groups (units, status, minimum thresholds), threshold adjustment, and manual count correction with mandatory audit reason.
 - **Donations** (`/Admin/Donations`): List with status filter, record walk-in donations (with eligibility validation), complete scheduled donations with units, reject with remarks, or cancel.
-- **Requests Queue** (`/Admin/Requests`): Priority queue ordered by Urgency (Critical $\rightarrow$ Urgent $\rightarrow$ Normal) and submission time; details view with live stock re-check, Approve, Issue (atomic stock deduction), and Reject (mandatory remarks).
+- **Requests Management** (`/Admin/Requests`): View all submitted blood requests (newest first); details view with live stock check, Approve, Issue (atomic stock deduction), and Reject (mandatory remarks).
 - **Transaction Ledger** (`/Admin/Transactions`): Immutable audit ledger of all inventory transactions (`DonationIn`, `IssueOut`, `Adjustment`) showing exact timestamp and `BalanceAfter`.
 - **Donor Directory** (`/Admin/Donors`): Search by name/email/phone, filter by blood group, view health profile/donation history, and activate/deactivate accounts.
 - **Patient Directory** (`/Admin/Patients`): Search by name/hospital/phone, filter by blood group, view facility profile/request history, and activate/deactivate accounts.

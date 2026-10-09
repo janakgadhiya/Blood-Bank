@@ -1,13 +1,13 @@
 @model IEnumerable<BloodBankSystem.Models.BloodRequest>
 @{
-    ViewData["Title"] = "Blood Requests Queue";
+    ViewData["Title"] = "Blood Requests";
     var stockMap = ViewBag.StockMap as Dictionary<int, int> ?? new();
 }
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Blood Requests Queue</h1>
-        <p class="page-subtitle">Prioritized queue: Critical requests first, then Urgent, then Normal (oldest first)</p>
+        <h1 class="page-title">Blood Requests</h1>
+        <p class="page-subtitle">Manage patient blood requests and track fulfillment status</p>
     </div>
 </div>
 
@@ -16,7 +16,7 @@
         <thead>
             <tr>
                 <th>Req ID</th>
-                <th>Priority</th>
+                <th>Urgency</th>
                 <th>Group</th>
                 <th>Units</th>
                 <th>In Stock</th>
@@ -31,16 +31,15 @@
             {
                 <tr>
                     <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
-                        No blood requests found in the queue.
+                        No blood requests found.
                     </td>
                 </tr>
             }
             @foreach (var item in Model)
             {
                 var availableInStock = stockMap.ContainsKey(item.BloodGroupId) ? stockMap[item.BloodGroupId] : 0;
-                var isPendingOrApproved = item.Status == BloodBankSystem.Models.RequestStatus.Pending || item.Status == BloodBankSystem.Models.RequestStatus.Approved;
 
-                <tr class="@(isPendingOrApproved && item.Urgency == BloodBankSystem.Models.RequestUrgency.Critical ? "row-critical" : (isPendingOrApproved && item.Urgency == BloodBankSystem.Models.RequestUrgency.Urgent ? "row-urgent" : ""))">
+                <tr>
                     <td><code>#@item.Id</code></td>
                     <td>
                         @switch (item.Urgency)

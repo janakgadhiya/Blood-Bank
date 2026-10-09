@@ -25,34 +25,19 @@ public class RequestsController : Controller
     [HttpGet("Index")]
     public async Task<IActionResult> Index()
     {
-        // 1. Fetch all requests with Patient, User, and BloodGroup
-        var allRequests = await _context.BloodRequests
+        // Simple and normal list of blood requests, newest first
+        var requests = await _context.BloodRequests
             .Include(r => r.Patient)
                 .ThenInclude(p => p.User)
             .Include(r => r.BloodGroup)
+            .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
 
-        // 2. Priority queue ordering:
-        // Pending first: ordered by Urgency descending (Critical = 2, Urgent = 1, Normal = 0), then CreatedAt ascending (oldest first)
-        var pendingRequests = allRequests
-            .Where(r => r.Status == RequestStatus.Pending || r.Status == RequestStatus.Approved)
-            .OrderByDescending(r => r.Urgency)
-            .ThenBy(r => r.CreatedAt)
-            .ToList();
-
-        // Non-pending requests: ordered by ProcessedAt/CreatedAt descending (newest first)
-        var otherRequests = allRequests
-            .Where(r => r.Status != RequestStatus.Pending && r.Status != RequestStatus.Approved)
-            .OrderByDescending(r => r.ProcessedAt ?? r.CreatedAt)
-            .ToList();
-
-        var orderedRequests = pendingRequests.Concat(otherRequests).ToList();
-
-        // Also fetch live stocks to display alongside requests
+        // Fetch live stocks to display alongside requests
         var stocks = await _context.BloodStocks.ToDictionaryAsync(s => s.BloodGroupId, s => s.AvailableUnits);
         ViewBag.StockMap = stocks;
 
-        return View(orderedRequests);
+        return View(requests);
     }
 
     [HttpGet("Details/{id}")]
