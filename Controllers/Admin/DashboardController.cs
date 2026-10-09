@@ -33,10 +33,6 @@ public class DashboardController : Controller
         var pendingRequests = await _context.BloodRequests
             .CountAsync(r => r.Status == RequestStatus.Pending);
 
-        var urgentAndCriticalPending = await _context.BloodRequests
-            .CountAsync(r => r.Status == RequestStatus.Pending && 
-                (r.Urgency == RequestUrgency.Urgent || r.Urgency == RequestUrgency.Critical));
-
         var donationsToday = await _context.Donations
             .CountAsync(d => d.Status == DonationStatus.Completed && d.DonationDate.Date == today);
 
@@ -60,7 +56,6 @@ public class DashboardController : Controller
         ViewBag.TotalPatients = totalPatients;
         ViewBag.TotalAvailableUnits = totalAvailableUnits;
         ViewBag.PendingRequests = pendingRequests;
-        ViewBag.UrgentAndCriticalPending = urgentAndCriticalPending;
         ViewBag.DonationsToday = donationsToday;
         ViewBag.LowStockGroups = lowStockGroups;
         ViewBag.LatestRequests = latestRequests;

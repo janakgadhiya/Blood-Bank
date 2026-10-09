@@ -20,7 +20,6 @@
                 <th>Request ID</th>
                 <th>Blood Group</th>
                 <th>Units</th>
-                <th>Urgency</th>
                 <th>Required By</th>
                 <th>Status</th>
                 <th>Admin Remarks</th>
@@ -32,31 +31,17 @@
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
                         You have not submitted any blood requests yet. <a asp-action="NewRequest">Create your first request</a>.
                     </td>
                 </tr>
             }
             @foreach (var req in Model)
             {
-                <tr class="@(req.Urgency == BloodBankSystem.Models.RequestUrgency.Critical ? "row-critical" : (req.Urgency == BloodBankSystem.Models.RequestUrgency.Urgent ? "row-urgent" : ""))">
+                <tr>
                     <td><code>#@req.Id</code></td>
                     <td><strong style="color: var(--primary-color);">@req.BloodGroup?.Name</strong></td>
                     <td><strong>@req.UnitsRequired</strong></td>
-                    <td>
-                        @switch (req.Urgency)
-                        {
-                            case BloodBankSystem.Models.RequestUrgency.Critical:
-                                <span class="badge badge-critical">Critical</span>
-                                break;
-                            case BloodBankSystem.Models.RequestUrgency.Urgent:
-                                <span class="badge badge-urgent">Urgent</span>
-                                break;
-                            case BloodBankSystem.Models.RequestUrgency.Normal:
-                                <span class="badge badge-normal">Normal</span>
-                                break;
-                        }
-                    </td>
                     <td>@req.RequiredByDate.ToString("yyyy-MM-dd")</td>
                     <td>
                         @switch (req.Status)

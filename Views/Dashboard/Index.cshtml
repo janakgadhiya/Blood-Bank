@@ -44,13 +44,7 @@
     <div class="card card-warning" style="text-align: center;">
         <div class="card-title">Pending Requests</div>
         <div class="card-value" style="color: #F57F17;">@pendingRequests</div>
-        <div class="card-desc">Awaiting medical review</div>
-    </div>
-
-    <div class="card card-danger" style="text-align: center;">
-        <div class="card-title">Urgent / Critical</div>
-        <div class="card-value" style="color: #C62828;">@urgentAndCriticalPending</div>
-        <div class="card-desc">Priority pending queue</div>
+        <div class="card-desc">Awaiting fulfillment</div>
     </div>
 
     <div class="card card-success" style="text-align: center;">
@@ -122,7 +116,6 @@
                 <thead>
                     <tr>
                         <th>Req ID</th>
-                        <th>Priority</th>
                         <th>Group</th>
                         <th>Units</th>
                         <th>Patient</th>
@@ -133,29 +126,15 @@
                     @if (!latestRequests.Any())
                     {
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
                                 No recent requests submitted.
                             </td>
                         </tr>
                     }
                     @foreach (var r in latestRequests)
                     {
-                        <tr class="@(r.Urgency == BloodBankSystem.Models.RequestUrgency.Critical ? "row-critical" : (r.Urgency == BloodBankSystem.Models.RequestUrgency.Urgent ? "row-urgent" : ""))">
+                        <tr>
                             <td><code>#@r.Id</code></td>
-                            <td>
-                                @switch (r.Urgency)
-                                {
-                                    case BloodBankSystem.Models.RequestUrgency.Critical:
-                                        <span class="badge badge-critical">Critical</span>
-                                        break;
-                                    case BloodBankSystem.Models.RequestUrgency.Urgent:
-                                        <span class="badge badge-urgent">Urgent</span>
-                                        break;
-                                    case BloodBankSystem.Models.RequestUrgency.Normal:
-                                        <span class="badge badge-normal">Normal</span>
-                                        break;
-                                }
-                            </td>
                             <td><strong style="color: var(--primary-color);">@r.BloodGroup?.Name</strong></td>
                             <td><strong>@r.UnitsRequired</strong></td>
                             <td>@(r.Patient?.User?.FullName ?? "Unknown")</td>

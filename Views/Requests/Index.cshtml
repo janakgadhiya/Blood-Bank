@@ -16,7 +16,6 @@
         <thead>
             <tr>
                 <th>Req ID</th>
-                <th>Urgency</th>
                 <th>Group</th>
                 <th>Units</th>
                 <th>In Stock</th>
@@ -30,7 +29,7 @@
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
                         No blood requests found.
                     </td>
                 </tr>
@@ -41,20 +40,6 @@
 
                 <tr>
                     <td><code>#@item.Id</code></td>
-                    <td>
-                        @switch (item.Urgency)
-                        {
-                            case BloodBankSystem.Models.RequestUrgency.Critical:
-                                <span class="badge badge-critical">Critical</span>
-                                break;
-                            case BloodBankSystem.Models.RequestUrgency.Urgent:
-                                <span class="badge badge-urgent">Urgent</span>
-                                break;
-                            case BloodBankSystem.Models.RequestUrgency.Normal:
-                                <span class="badge badge-normal">Normal</span>
-                                break;
-                        }
-                    </td>
                     <td><strong style="color: var(--primary-color); font-size: 1.05rem;">@item.BloodGroup?.Name</strong></td>
                     <td><strong>@item.UnitsRequired</strong></td>
                     <td>

@@ -44,7 +44,6 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Urgency</th>
                         <th>Units</th>
                         <th>Required By</th>
                         <th>Status</th>
@@ -55,7 +54,7 @@
                     @if (!Model.BloodRequests.Any())
                     {
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
                                 No blood requests submitted by this patient yet.
                             </td>
                         </tr>
@@ -64,20 +63,6 @@
                     {
                         <tr>
                             <td>#@r.Id</td>
-                            <td>
-                                @switch (r.Urgency)
-                                {
-                                    case BloodBankSystem.Models.RequestUrgency.Critical:
-                                        <span class="badge badge-critical">Critical</span>
-                                        break;
-                                    case BloodBankSystem.Models.RequestUrgency.Urgent:
-                                        <span class="badge badge-urgent">Urgent</span>
-                                        break;
-                                    case BloodBankSystem.Models.RequestUrgency.Normal:
-                                        <span class="badge badge-normal">Normal</span>
-                                        break;
-                                }
-                            </td>
                             <td>@r.UnitsRequired</td>
                             <td>@r.RequiredByDate.ToString("yyyy-MM-dd")</td>
                             <td>

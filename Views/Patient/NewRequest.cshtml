@@ -34,22 +34,10 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="Urgency" class="form-label"></label>
-                    <select asp-for="Urgency" class="form-select">
-                        <option value="@BloodBankSystem.Models.RequestUrgency.Normal">Normal</option>
-                        <option value="@BloodBankSystem.Models.RequestUrgency.Urgent">Urgent</option>
-                        <option value="@BloodBankSystem.Models.RequestUrgency.Critical">Critical (Immediate Need)</option>
-                    </select>
-                    <span asp-validation-for="Urgency" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="RequiredByDate" class="form-label"></label>
-                    <input asp-for="RequiredByDate" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                    <span asp-validation-for="RequiredByDate" class="text-danger"></span>
-                </div>
+            <div class="form-group">
+                <label asp-for="RequiredByDate" class="form-label"></label>
+                <input asp-for="RequiredByDate" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="RequiredByDate" class="text-danger"></span>
             </div>
 
             <div class="form-group">

@@ -30,21 +30,6 @@
                     <label class="form-label">Units Required:</label>
                     <span style="font-size: 1.2rem; font-weight: 700;">@Model.UnitsRequired units</span>
                 </div>
-                <div>
-                    <label class="form-label">Urgency:</label>
-                    @switch (Model.Urgency)
-                    {
-                        case BloodBankSystem.Models.RequestUrgency.Critical:
-                            <span class="badge badge-critical">Critical</span>
-                            break;
-                        case BloodBankSystem.Models.RequestUrgency.Urgent:
-                            <span class="badge badge-urgent">Urgent</span>
-                            break;
-                        case BloodBankSystem.Models.RequestUrgency.Normal:
-                            <span class="badge badge-normal">Normal</span>
-                            break;
-                    }
-                </div>
             </div>
 
             <div class="form-row" style="margin-bottom: 0.75rem;">
